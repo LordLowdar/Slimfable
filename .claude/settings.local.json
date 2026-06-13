@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Add-Type -AssemblyName System.Drawing; foreach \\($f in @\\('bike.png','dark-rider.png','bright-rider.png','end.png','Remove the backgroun.png','Large Red.png','redlights.png','oni.png','Street oni.png','slim logo.png'\\)\\) { $img = [System.Drawing.Bitmap]::FromFile\\(\"C:\\\\Users\\\\vacav\\\\slim old\\\\$f\"\\); $hasAlpha = $false; foreach \\($pt in @\\(@\\(0,0\\), @\\(5,5\\), @\\(\\($img.Width-1\\),0\\), @\\(0,\\($img.Height-1\\)\\), @\\(\\($img.Width/2\\),0\\)\\)\\) { $p = $img.GetPixel\\($pt[0], $pt[1]\\); if \\($p.A -lt 255\\) { $hasAlpha = $true } }; Write-Output \\(\"{0}: {1}x{2} cornerTransparent={3} pixelFormat={4}\" -f $f, $img.Width, $img.Height, $hasAlpha, $img.PixelFormat\\); $img.Dispose\\(\\) })"
+    ]
+  }
+}

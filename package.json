@@ -1,0 +1,11 @@
+{
+  "name": "slimfable",
+  "version": "1.0.0",
+  "description": "SLIM.S1K — moto vlogger site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch:ig": "node scripts/fetch-instagram.mjs",
+    "serve": "python -m http.server 8741"
+  }
+}
