@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SLIM.S1K — Moto Vlogger · Night Rider · Tokyo Spirit</title>
-  <meta name="description" content="Slim.s1k — moto vlogger and night rider. POV street rides, bike builds, and the oni spirit. New vlogs every week." />
+  <title>SLIM.S1K — Moto Vlogger · Night Rider · Sacramento, CA</title>
+  <meta name="description" content="Slim.s1k — moto vlogger riding the streets of Sacramento, CA. POV street rides, bike life, and the oni spirit. New videos every week on YouTube." />
   <link rel="icon" type="image/png" href="assets/slim-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
 
@@ -91,7 +91,7 @@
         <div class="section-tag reveal">// THE RIDER</div>
         <h2 class="section-title reveal">BEHIND THE <span class="accent">VISOR</span></h2>
         <p class="reveal">
-          They call me <strong>Slim</strong>. By day I'm a ghost — by night the city is mine.
+          They call me <strong>Slim</strong>. By day I'm a ghost — by night Sacramento is mine.
           I film every ride raw and unfiltered: pure POV, real speed, real streets.
           No fake hype, no rented bikes. Just me, the S1K, and the road after dark.
         </p>
@@ -100,22 +100,28 @@
           tame is the one that makes you fast. <span class="jp">改善</span> — get a
           little better every single ride.
         </p>
+        <!-- Baked-in values are the fallback; assets/stats.json (refreshed daily
+             by the update-stats workflow) overrides them at page load. -->
         <div class="stats-row reveal">
           <div class="stat">
-            <div class="stat-num" data-count="120" data-suffix="K+">0</div>
+            <div class="stat-num" data-stat="yt-subscribers" data-count="3.2" data-decimals="1" data-suffix="K+">0</div>
             <div class="stat-lbl">Subscribers</div>
           </div>
           <div class="stat">
-            <div class="stat-num" data-count="8" data-suffix="M+">0</div>
+            <div class="stat-num" data-stat="ig-followers" data-count="19.9" data-decimals="1" data-suffix="K+">0</div>
+            <div class="stat-lbl">IG Followers</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num" data-stat="yt-views" data-count="13" data-suffix="M+">0</div>
             <div class="stat-lbl">Total Views</div>
           </div>
           <div class="stat">
-            <div class="stat-num" data-count="40" data-suffix="K+">0</div>
-            <div class="stat-lbl">Night Miles</div>
+            <div class="stat-num" data-stat="yt-videos" data-count="65" data-suffix="">0</div>
+            <div class="stat-lbl">Videos</div>
           </div>
           <div class="stat">
-            <div class="stat-num" data-count="200" data-suffix="+">0</div>
-            <div class="stat-lbl">Episodes</div>
+            <div class="stat-num" data-stat="yt-years" data-count="4" data-suffix="+">0</div>
+            <div class="stat-lbl">Years on YouTube</div>
           </div>
         </div>
       </div>
@@ -156,57 +162,58 @@
         <a href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener" class="btn btn-ghost reveal">ALL EPISODES ↗</a>
       </div>
 
-      <div class="vlog-grid">
-        <!-- Replace href values with real video links -->
-        <a href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener" class="vlog-card featured reveal">
+      <!-- These cards are the fallback; assets/stats.json swaps in the latest
+           uploads at page load when available. -->
+      <div class="vlog-grid" id="vlogGrid">
+        <a href="https://www.youtube.com/watch?v=Gb119cJDmvg" target="_blank" rel="noopener" class="vlog-card featured reveal">
           <div class="vlog-thumb">
-            <img src="assets/large-red.png" alt="Burnout in red smoke" />
+            <img src="assets/yt/camera-stolen.jpg" alt="My camera got stolen — video thumbnail" />
             <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>
-            <span class="vlog-dur">24:13</span>
+            <span class="vlog-dur">3:59</span>
           </div>
           <div class="vlog-meta">
-            <span class="vlog-ep">EP. 204 · FEATURED</span>
-            <h3>RED SMOKE — Burning Out the Old Year</h3>
-            <p>The send-off ride. Full burnout, full send, and a story I've never told on camera.</p>
+            <span class="vlog-ep">FEATURED · FULL VIDEO</span>
+            <h3>WENT OUT TO FILM CONTENT… ENDED UP GETTING ROBBED</h3>
+            <p>The full story — a filming day gone wrong, a stolen camera, and everything that came after.</p>
           </div>
         </a>
 
-        <a href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener" class="vlog-card reveal">
+        <a href="https://www.youtube.com/shorts/k1ylr70IApk" target="_blank" rel="noopener" class="vlog-card reveal">
           <div class="vlog-thumb">
-            <img src="assets/redlights.png" alt="Red headlights in the dark" />
+            <img src="assets/yt/damage-reveal.jpg" alt="Damage reveal — fairings off the S1K" />
             <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>
-            <span class="vlog-dur">16:42</span>
+            <span class="vlog-dur">SHORT</span>
           </div>
           <div class="vlog-meta">
-            <span class="vlog-ep">EP. 203</span>
-            <h3>MIDNIGHT RUN — City Loop at 2AM</h3>
-            <p>Empty streets, red lights, and the cleanest tunnel pulls of the season.</p>
+            <span class="vlog-ep">JUN 27, 2026</span>
+            <h3>DAMAGE REVEAL — SHADOW</h3>
+            <p>Fairings off, piece by piece. A full look at what Shadow took and what survived.</p>
           </div>
         </a>
 
-        <a href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener" class="vlog-card reveal">
+        <a href="https://www.youtube.com/shorts/6bQqlW_f1-Y" target="_blank" rel="noopener" class="vlog-card reveal">
           <div class="vlog-thumb">
-            <img src="assets/bike.png" alt="The S1K head-on" />
+            <img src="assets/yt/dummy-of-the-year.jpg" alt="Night ride across the bridge" />
             <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>
-            <span class="vlog-dur">19:05</span>
+            <span class="vlog-dur">SHORT</span>
           </div>
           <div class="vlog-meta">
-            <span class="vlog-ep">EP. 202</span>
-            <h3>THE BUILD — New Fairings &amp; Red Pinstripes</h3>
-            <p>Tearing the S1K down and rebuilding her meaner. Full garage vlog.</p>
+            <span class="vlog-ep">JUN 22, 2026</span>
+            <h3>I DON'T DID IT THIS TIME… :(</h3>
+            <p>Dummy of the year goes to… a midnight bridge run and a mistake I had to own.</p>
           </div>
         </a>
 
-        <a href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener" class="vlog-card reveal">
+        <a href="https://www.youtube.com/shorts/MOv6rIoR6zk" target="_blank" rel="noopener" class="vlog-card reveal">
           <div class="vlog-thumb">
-            <img src="assets/street-oni.png" alt="Street oni artwork" />
+            <img src="assets/yt/tour-de-bay.jpg" alt="Scene from the Tour de Bay ride" />
             <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>
-            <span class="vlog-dur">12:58</span>
+            <span class="vlog-dur">SHORT</span>
           </div>
           <div class="vlog-meta">
-            <span class="vlog-ep">EP. 201</span>
-            <h3>ONI SPIRIT — Why I Ride at Night</h3>
-            <p>Sit-down episode. The story behind the demon, the name, and the channel.</p>
+            <span class="vlog-ep">JUN 10, 2026 · TOUR DE BAY</span>
+            <h3>WHAT'S YOUR THOUGHTS ON THIS?</h3>
+            <p>Straight from Tour de Bay. Watch it and tell me what you think in the comments.</p>
           </div>
         </a>
       </div>
@@ -249,7 +256,6 @@
       <h2 class="connect-title reveal">RIDE <span class="accent">WITH ME</span></h2>
       <p class="reveal">New vlog every week. Catch the live rides on stream and the daily chaos on socials.</p>
       <div class="social-row reveal">
-        <!-- Update handles/links to the real profiles -->
         <a class="social-btn" href="https://www.youtube.com/@slim.s1k" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.5v-7l6.3 3.5z"/></svg>
           <span>YOUTUBE<em>@slim.s1k</em></span>
@@ -262,8 +268,12 @@
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.6 7.1a5.6 5.6 0 0 1-3.4-1.1 5.6 5.6 0 0 1-2.1-3.3h-3.5v13.6a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.9a6.4 6.4 0 0 0-.9-.1 6.4 6.4 0 1 0 6.4 6.4V9.6a9 9 0 0 0 5.5 1.8z"/></svg>
           <span>TIKTOK<em>@slim.s1k</em></span>
         </a>
+        <a class="social-btn" href="https://www.facebook.com/slim.s1k" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.09 24 18.1 24 12.07z"/></svg>
+          <span>FACEBOOK<em>slim.s1k</em></span>
+        </a>
       </div>
-      <a href="mailto:business@slims1k.com" class="biz-link reveal">BUSINESS &amp; SPONSORSHIPS → business@slims1k.com</a>
+      <a href="mailto:UnrestrictedSocietyllc@gmail.com" class="biz-link reveal">BUSINESS &amp; SPONSORSHIPS → UnrestrictedSocietyllc@gmail.com</a>
     </div>
   </section>
 
@@ -277,6 +287,6 @@
 
   <script src="js/gsap.min.js"></script>
   <script src="js/ScrollTrigger.min.js"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/main.js?v=6"></script>
 </body>
 </html>

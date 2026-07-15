@@ -117,27 +117,151 @@ document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
   }
 })();
 
+/* ---------- Live stats + latest vlogs ----------
+   assets/stats.json is refreshed daily by scripts/fetch-stats.mjs (GitHub
+   Action). It overrides the baked-in stat numbers and swaps the vlog cards
+   for the latest uploads. On any failure the hand-written fallbacks stay. */
+
+/* 13789011 → {count: 13, suffix: "M+"}; 3260 → {count: 3.2, suffix: "K+"}.
+   Floors instead of rounding so the "+" never overstates. */
+function counterParts(n) {
+  if (n >= 1e6) {
+    const v = Math.floor(n / 1e5) / 10;
+    return v < 10 ? { count: v, decimals: 1, suffix: 'M+' } : { count: Math.floor(v), decimals: 0, suffix: 'M+' };
+  }
+  if (n >= 1e3) {
+    const v = Math.floor(n / 100) / 10;
+    return v < 100 ? { count: v, decimals: 1, suffix: 'K+' } : { count: Math.floor(v), decimals: 0, suffix: 'K+' };
+  }
+  return { count: n, decimals: 0, suffix: '' };
+}
+
+function fmtViews(n) {
+  const p = counterParts(n);
+  return p.count.toFixed(p.decimals) + p.suffix.replace('+', '');
+}
+
+function applyStats(stats) {
+  if (!stats) return;
+  const values = {
+    'yt-subscribers': stats.ytSubscribers,
+    'ig-followers': stats.igFollowers,
+    'yt-views': stats.ytViews,
+    'yt-videos': stats.ytVideos,
+    'yt-years': stats.ytJoined
+      ? Math.floor((Date.now() - new Date(stats.ytJoined)) / (365.25 * 864e5))
+      : null,
+  };
+  document.querySelectorAll('.stat-num[data-stat]').forEach((el) => {
+    const raw = values[el.dataset.stat];
+    if (!raw || raw < 0) return; // keep the baked-in fallback
+    const p = el.dataset.stat === 'yt-years'
+      ? { count: raw, decimals: 0, suffix: '+' }
+      : counterParts(raw);
+    el.dataset.count = p.count;
+    el.dataset.decimals = p.decimals;
+    el.dataset.suffix = p.suffix;
+  });
+}
+
+function vlogCard(v, isFeatured) {
+  const a = document.createElement('a');
+  a.className = isFeatured ? 'vlog-card featured reveal' : 'vlog-card reveal';
+  a.href = v.url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+
+  const thumb = document.createElement('div');
+  thumb.className = 'vlog-thumb';
+  const img = document.createElement('img');
+  img.src = v.thumb;
+  img.alt = v.title;
+  img.loading = 'lazy';
+  thumb.appendChild(img);
+  thumb.insertAdjacentHTML(
+    'beforeend',
+    '<div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>'
+  );
+  const dur = document.createElement('span');
+  dur.className = 'vlog-dur';
+  dur.textContent = isFeatured ? v.duration || 'WATCH' : 'SHORT';
+  thumb.appendChild(dur);
+
+  const meta = document.createElement('div');
+  meta.className = 'vlog-meta';
+  const ep = document.createElement('span');
+  ep.className = 'vlog-ep';
+  const date = v.published
+    ? new Date(v.published)
+        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        .toUpperCase()
+    : '';
+  ep.textContent = isFeatured ? 'FEATURED · FULL VIDEO' : date;
+  const h3 = document.createElement('h3');
+  h3.textContent = v.title;
+  const p = document.createElement('p');
+  p.textContent = v.views ? `${fmtViews(v.views)} views on YouTube.` : 'Watch on YouTube.';
+  meta.append(ep, h3, p);
+
+  a.append(thumb, meta);
+  return a;
+}
+
+function renderVlogs(data) {
+  const grid = document.getElementById('vlogGrid');
+  if (!grid || !data.featured || !Array.isArray(data.shorts) || data.shorts.length === 0) return;
+  grid.innerHTML = '';
+  grid.appendChild(vlogCard(data.featured, true));
+  data.shorts.forEach((s) => grid.appendChild(vlogCard(s, false)));
+  grid.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+  ScrollTrigger.refresh();
+}
+
 /* ---------- Stat counters ---------- */
-document.querySelectorAll('.stat-num').forEach((el) => {
-  const target = +el.dataset.count;
-  const suffix = el.dataset.suffix || '';
-  ScrollTrigger.create({
-    trigger: el,
-    start: 'top 85%',
-    once: true,
-    onEnter: () => {
+function initStatCounters() {
+  document.querySelectorAll('.stat-num').forEach((el) => {
+    const target = +el.dataset.count;
+    const suffix = el.dataset.suffix || '';
+    const decimals = +el.dataset.decimals || 0;
+    const run = () => {
       const counter = { v: 0 };
       gsap.to(counter, {
         v: target,
         duration: 1.8,
         ease: 'power2.out',
         onUpdate: () => {
-          el.textContent = Math.round(counter.v) + suffix;
+          el.textContent = counter.v.toFixed(decimals) + suffix;
         },
       });
-    },
+    };
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: 'top 85%',
+      once: true,
+      onEnter: run,
+    });
+    // Counters are created after the stats fetch resolves; if the page is
+    // already scrolled past the trigger by then (scroll restoration, deep
+    // link), onEnter never fires — run immediately instead.
+    if (st.isActive || st.progress > 0) {
+      st.kill();
+      run();
+    }
   });
-});
+}
+
+(async function loadStats() {
+  try {
+    const res = await fetch('assets/stats.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    applyStats(data.stats);
+    renderVlogs(data);
+  } catch (e) {
+    /* keep the baked-in numbers and cards */
+  }
+  initStatCounters();
+})();
 
 /* ---------- Machine bike parallax ---------- */
 gsap.to('#machineBike', {

@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "fetch:ig": "node scripts/fetch-instagram.mjs",
+    "fetch:stats": "node scripts/fetch-stats.mjs",
     "serve": "python -m http.server 8741"
   }
 }

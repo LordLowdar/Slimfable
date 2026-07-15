@@ -517,7 +517,7 @@ a {
 }
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   margin-top: 38px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -967,6 +967,9 @@ footer {
   }
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-row .stat:last-child {
+    grid-column: span 2;
   }
   .gallery-grid {
     grid-auto-rows: 170px;
