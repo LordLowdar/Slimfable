@@ -1,8 +1,8 @@
 {
-  "updated": "2026-07-16T15:48:56.064Z",
+  "updated": "2026-07-17T15:42:49.730Z",
   "stats": {
     "ytSubscribers": 3260,
-    "ytViews": 13789031,
+    "ytViews": 13789058,
     "ytVideos": 65,
     "ytJoined": "2021-11-06",
     "igFollowers": 19899
@@ -13,7 +13,7 @@
     "url": "https://www.youtube.com/watch?v=Gb119cJDmvg",
     "thumb": "https://i.ytimg.com/vi/Gb119cJDmvg/maxresdefault.jpg",
     "duration": "3:59",
-    "views": null,
+    "views": 271,
     "published": null
   },
   "shorts": [
@@ -22,7 +22,7 @@
       "title": "Damage reveal if Shadow",
       "url": "https://www.youtube.com/shorts/k1ylr70IApk",
       "thumb": "https://i.ytimg.com/vi/k1ylr70IApk/oar2.jpg",
-      "views": 836,
+      "views": 838,
       "published": "2026-06-27T20:42:15+00:00"
     },
     {
@@ -30,7 +30,7 @@
       "title": "I don’t did it this time …. :(",
       "url": "https://www.youtube.com/shorts/6bQqlW_f1-Y",
       "thumb": "https://i.ytimg.com/vi/6bQqlW_f1-Y/oar2.jpg",
-      "views": 20892,
+      "views": 20896,
       "published": "2026-06-22T09:26:06+00:00"
     },
     {
@@ -38,7 +38,7 @@
       "title": "What’s your thoughts on this ?",
       "url": "https://www.youtube.com/shorts/MOv6rIoR6zk",
       "thumb": "https://i.ytimg.com/vi/MOv6rIoR6zk/oar2.jpg",
-      "views": 4075,
+      "views": 4076,
       "published": "2026-06-10T23:25:08+00:00"
     }
   ]
