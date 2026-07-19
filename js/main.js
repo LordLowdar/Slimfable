@@ -82,36 +82,121 @@ const observer = new IntersectionObserver(
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
 /* ---------- Instagram gallery ----------
-   Loads assets/instagram.json (built by `npm run fetch:ig`). On success it
-   replaces the fallback local images with Slim's latest posts. On any failure
-   the hand-picked local gallery stays exactly as-is. */
+   Loads assets/instagram.json (refreshed by fetch-stats.mjs, or by
+   fetch-instagram.mjs once the Graph API token exists) and renders Slim's
+   real posts as Instagram-style cards. On any failure the hand-picked
+   local gallery stays exactly as-is. */
+const IG_ICONS = {
+  heart:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S3.5 15.4 3.5 9.6A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8.5 2.6c0 5.8-8.5 10.9-8.5 10.9z"/></svg>',
+  comment:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 4.8 16.6L21 21l-1.2-4.4A9 9 0 0 0 12 3z"/></svg>',
+  share:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>',
+  bookmark:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1z"/></svg>',
+  video:
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+};
+
+function igAge(iso) {
+  const days = Math.floor((Date.now() - new Date(iso)) / 864e5);
+  if (days < 1) return 'today';
+  if (days < 7) return days + 'd';
+  if (days < 56) return Math.floor(days / 7) + 'w';
+  return Math.floor(days / 30.4) + 'mo';
+}
+
+function igPostCard(post, profile) {
+  const a = document.createElement('a');
+  a.className = 'ig-card reveal';
+  a.href = post.permalink || 'https://www.instagram.com/slim.s1k';
+  a.target = '_blank';
+  a.rel = 'noopener';
+
+  const head = document.createElement('div');
+  head.className = 'ig-head';
+  const avatar = document.createElement('img');
+  avatar.className = 'ig-avatar';
+  avatar.src = (profile && profile.avatar) || 'assets/slim-logo.png';
+  avatar.alt = '';
+  avatar.loading = 'lazy';
+  const user = document.createElement('div');
+  user.className = 'ig-user';
+  const uname = document.createElement('strong');
+  uname.textContent = (profile && profile.username) || 'slim.s1k';
+  user.appendChild(uname);
+  if (post.timestamp) {
+    const t = document.createElement('span');
+    t.textContent = igAge(post.timestamp);
+    user.appendChild(t);
+  }
+  const more = document.createElement('span');
+  more.className = 'ig-more';
+  more.textContent = '•••';
+  head.append(avatar, user, more);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'ig-img';
+  const img = document.createElement('img');
+  img.src = post.src;
+  img.alt = post.caption || 'Instagram post by Slim.s1k';
+  img.loading = 'lazy';
+  wrap.appendChild(img);
+  if (post.type === 'VIDEO') {
+    wrap.insertAdjacentHTML('beforeend', `<span class="ig-video-badge">${IG_ICONS.video}</span>`);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'ig-actions';
+  actions.innerHTML =
+    IG_ICONS.heart + IG_ICONS.comment + IG_ICONS.share + `<span class="ig-save">${IG_ICONS.bookmark}</span>`;
+
+  a.append(head, wrap, actions);
+
+  if (typeof post.likes === 'number') {
+    const likes = document.createElement('div');
+    likes.className = 'ig-likes';
+    likes.textContent = post.likes.toLocaleString('en-US') + ' likes';
+    a.appendChild(likes);
+  }
+  if (post.comments > 0) {
+    const com = document.createElement('div');
+    com.className = 'ig-comments';
+    com.textContent = `View all ${post.comments.toLocaleString('en-US')} comments`;
+    a.appendChild(com);
+  }
+  const cap = document.createElement('div');
+  cap.className = 'ig-caption';
+  const capUser = document.createElement('strong');
+  capUser.textContent = (profile && profile.username) || 'slim.s1k';
+  cap.append(capUser, document.createTextNode(' ' + (post.caption || '')));
+  a.appendChild(cap);
+  return a;
+}
+
 (async function loadInstagram() {
   const grid = document.getElementById('galleryGrid');
   if (!grid) return;
-  // size rhythm so the IG grid keeps the same varied look as the fallback
-  const sizes = ['tall', '', '', 'wide', '', 'tall', '', '', '', 'wide', '', ''];
   try {
     const res = await fetch('assets/instagram.json', { cache: 'no-cache' });
     if (!res.ok) return;
-    const { items } = await res.json();
-    if (!Array.isArray(items) || items.length === 0) return;
+    const data = await res.json();
+    if (!Array.isArray(data.items) || data.items.length === 0) return;
 
+    const items = data.items
+      .slice()
+      .sort((x, y) => new Date(y.timestamp || 0) - new Date(x.timestamp || 0))
+      .slice(0, 6);
+
+    grid.classList.add('ig-grid');
     grid.innerHTML = '';
-    items.forEach((post, i) => {
-      const a = document.createElement('a');
-      a.className = `g-item reveal ${sizes[i % sizes.length]}`.trim();
-      a.href = post.permalink || 'https://www.instagram.com/slim.s1k';
-      a.target = '_blank';
-      a.rel = 'noopener';
-      const img = document.createElement('img');
-      img.src = post.src;
-      img.alt = post.caption || 'Instagram post by Slim.s1k';
-      img.loading = 'lazy';
-      a.appendChild(img);
-      if (post.type === 'VIDEO') a.classList.add('is-video');
-      grid.appendChild(a);
-      observer.observe(a);
+    items.forEach((post) => {
+      const card = igPostCard(post, data.profile);
+      grid.appendChild(card);
+      observer.observe(card);
     });
+    ScrollTrigger.refresh();
   } catch (e) {
     /* keep the fallback gallery */
   }

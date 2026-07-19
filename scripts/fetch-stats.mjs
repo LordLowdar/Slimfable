@@ -23,6 +23,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT_JSON = path.join(ROOT, 'assets', 'stats.json');
+const IG_DIR = path.join(ROOT, 'assets', 'ig');
+const IG_JSON = path.join(ROOT, 'assets', 'instagram.json');
+const IG_POST_LIMIT = 12;
 
 const YT_HANDLE = 'slim.s1k';
 const YT_CHANNEL_ID = 'UCLT7V2MkIbR9ZtSgdqw5h8A';
@@ -51,6 +54,47 @@ function get(url, headers = {}, redirects = 0) {
       })
       .on('error', reject);
   });
+}
+
+/** GET a binary body into a Buffer (follows redirects). */
+function getBuffer(url, redirects = 0) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, { headers: { 'user-agent': UA } }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirects < 5) {
+          res.resume();
+          const next = new URL(res.headers.location, url).href;
+          return getBuffer(next, redirects + 1).then(resolve, reject);
+        }
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+        }
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      })
+      .on('error', reject);
+  });
+}
+
+/** Write only when content differs, so unchanged runs produce no git diff. */
+function writeIfChanged(file, buf) {
+  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return false;
+  fs.writeFileSync(file, buf);
+  return true;
+}
+
+/** Write JSON only when it differs beyond the "updated" timestamp. */
+function writeJsonIfChanged(file, obj) {
+  const strip = (o) => JSON.stringify(Object.assign({}, o, { updated: null }));
+  try {
+    if (strip(JSON.parse(fs.readFileSync(file, 'utf8'))) === strip(obj)) return false;
+  } catch (e) {
+    /* missing or invalid — write it */
+  }
+  fs.writeFileSync(file, JSON.stringify(obj, null, 2));
+  return true;
 }
 
 /** Resolve the status code of a URL without downloading the body. */
@@ -161,18 +205,103 @@ async function pickThumb(id, isShort) {
   return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 }
 
-/* ---------- Instagram follower count ---------- */
+/* ---------- Instagram: follower count + latest public posts ----------
+   Anonymous scrape of the public web profile endpoint — no access token.
+   Once the official Graph API token exists (see INSTAGRAM-SETUP.md),
+   fetch-instagram.mjs can take over the gallery; the JSON shape matches. */
 async function fetchInstagram() {
   const body = await get(
     `https://i.instagram.com/api/v1/users/web_profile_info/?username=${IG_USERNAME}`,
     { 'x-ig-app-id': '936619743392459' }
   );
-  const json = JSON.parse(body);
-  const count = json && json.data && json.data.user && json.data.user.edge_followed_by
-    ? json.data.user.edge_followed_by.count
-    : null;
-  if (!count) throw new Error('follower count missing from response');
-  return { igFollowers: count };
+  const user = JSON.parse(body).data && JSON.parse(body).data.user;
+  if (!user || !user.edge_followed_by) throw new Error('profile missing from response');
+
+  const posts = (user.edge_owner_to_timeline_media.edges || [])
+    .slice(0, IG_POST_LIMIT)
+    .map(({ node: n }) => {
+      // largest square thumb (640px) keeps the repo light; display_url is the fallback
+      const thumbs = n.thumbnail_resources || [];
+      const best = thumbs.length ? thumbs[thumbs.length - 1].src : n.display_url;
+      const caption = n.edge_media_to_caption.edges[0] ? n.edge_media_to_caption.edges[0].node.text : '';
+      return {
+        shortcode: n.shortcode,
+        imgUrl: best,
+        permalink: `https://www.instagram.com/p/${n.shortcode}/`,
+        caption: caption.split('\n')[0].slice(0, 140),
+        likes: n.edge_liked_by ? n.edge_liked_by.count : null,
+        comments: n.edge_media_to_comment ? n.edge_media_to_comment.count : null,
+        type: n.is_video ? 'VIDEO' : 'IMAGE',
+        timestamp: n.taken_at_timestamp ? new Date(n.taken_at_timestamp * 1000).toISOString() : null,
+      };
+    });
+
+  return {
+    igFollowers: user.edge_followed_by.count,
+    profile: {
+      username: user.username || IG_USERNAME,
+      fullName: user.full_name || '',
+      avatarUrl: user.profile_pic_url_hd || user.profile_pic_url || null,
+    },
+    posts,
+  };
+}
+
+/** Download post images + avatar, prune stale files, write instagram.json. */
+async function saveInstagramGallery(ig) {
+  fs.mkdirSync(IG_DIR, { recursive: true });
+  const keep = new Set();
+
+  if (ig.profile.avatarUrl) {
+    try {
+      writeIfChanged(path.join(IG_DIR, 'avatar.jpg'), await getBuffer(ig.profile.avatarUrl));
+      keep.add('avatar.jpg');
+    } catch (e) {
+      console.warn(`  ⚠ avatar skipped: ${e.message}`);
+      if (fs.existsSync(path.join(IG_DIR, 'avatar.jpg'))) keep.add('avatar.jpg');
+    }
+  }
+
+  const items = [];
+  for (const post of ig.posts) {
+    const file = `${post.shortcode}.jpg`;
+    const dest = path.join(IG_DIR, file);
+    try {
+      // shortcodes are immutable — never re-download an image we already have
+      if (!fs.existsSync(dest)) fs.writeFileSync(dest, await getBuffer(post.imgUrl));
+      keep.add(file);
+      items.push({
+        shortcode: post.shortcode,
+        src: `assets/ig/${file}`,
+        permalink: post.permalink,
+        caption: post.caption,
+        likes: post.likes,
+        comments: post.comments,
+        type: post.type,
+        timestamp: post.timestamp,
+      });
+      process.stdout.write('.');
+    } catch (e) {
+      console.warn(`\n  skipped ${post.shortcode}: ${e.message}`);
+    }
+  }
+  if (items.length === 0) throw new Error('no post images could be downloaded');
+
+  for (const f of fs.readdirSync(IG_DIR)) {
+    if (!keep.has(f)) fs.unlinkSync(path.join(IG_DIR, f));
+  }
+
+  writeJsonIfChanged(IG_JSON, {
+    updated: new Date().toISOString(),
+    source: 'public-scrape',
+    profile: {
+      username: ig.profile.username,
+      fullName: ig.profile.fullName,
+      avatar: keep.has('avatar.jpg') ? 'assets/ig/avatar.jpg' : null,
+    },
+    items,
+  });
+  return items.length;
 }
 
 /* ---------- main ---------- */
@@ -201,11 +330,18 @@ async function main() {
     console.warn(`  ⚠ kept previous values (${e.message})`);
   }
 
-  console.log('→ Instagram followers…');
+  console.log('→ Instagram followers + posts…');
   try {
-    Object.assign(result.stats, await fetchInstagram());
+    const ig = await fetchInstagram();
+    result.stats.igFollowers = ig.igFollowers;
     ok++;
-    console.log(`  ✔ ${result.stats.igFollowers} followers`);
+    console.log(`  ✔ ${ig.igFollowers} followers`);
+    try {
+      const saved = await saveInstagramGallery(ig);
+      console.log(`\n  ✔ ${saved} posts → assets/instagram.json`);
+    } catch (e) {
+      console.warn(`  ⚠ kept previous gallery (${e.message})`);
+    }
   } catch (e) {
     console.warn(`  ⚠ kept previous value (${e.message})`);
   }
@@ -250,8 +386,8 @@ async function main() {
     process.exit(1);
   }
 
-  fs.writeFileSync(OUT_JSON, JSON.stringify(result, null, 2));
-  console.log(`\n✔ Saved → assets/stats.json (${ok}/3 sections refreshed)\n`);
+  const wrote = writeJsonIfChanged(OUT_JSON, result);
+  console.log(`\n✔ ${wrote ? 'Saved' : 'No changes'} → assets/stats.json (${ok}/3 sections refreshed)\n`);
 }
 
 main().catch((e) => {
