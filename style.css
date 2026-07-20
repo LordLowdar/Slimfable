@@ -1044,11 +1044,12 @@ a {
   padding-bottom: 70px;
 }
 .connect-rider {
-  width: min(300px, 56vw);
-  margin: 0 auto 10px;
+  width: min(380px, 70vw);
+  margin: 0 auto 34px;
 }
 .connect-rider img {
   width: 100%;
+  border: 1px solid rgba(226, 36, 36, 0.4);
   filter: drop-shadow(0 0 40px rgba(226, 36, 36, 0.3));
 }
 .connect-title {
