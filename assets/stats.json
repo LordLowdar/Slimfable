@@ -1,8 +1,8 @@
 {
-  "updated": "2026-09-21T19:30:40.075Z",
+  "updated": "2026-09-22T18:07:04.758Z",
   "stats": {
-    "ytSubscribers": 3260,
-    "ytViews": 13844665,
+    "ytSubscribers": 3250,
+    "ytViews": 13844679,
     "ytVideos": 65,
     "ytJoined": "2021-11-06",
     "igFollowers": 19903
@@ -13,7 +13,7 @@
     "url": "https://www.youtube.com/watch?v=Gb119cJDmvg",
     "thumb": "https://i.ytimg.com/vi/Gb119cJDmvg/maxresdefault.jpg",
     "duration": "3:59",
-    "views": 276,
+    "views": null,
     "published": null
   },
   "shorts": [
